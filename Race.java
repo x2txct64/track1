@@ -32,7 +32,7 @@ public class Race {
         return round;
     }
 
-    public boolean isComplete() {
+    public boolean getisComplete() {
         return isComplete;
     }
 
