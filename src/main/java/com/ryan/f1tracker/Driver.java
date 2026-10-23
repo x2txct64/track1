@@ -6,7 +6,7 @@ public class Driver {
     private String name;
     private String team;
     private int driverNum;
-    private int currentPoints;
+    private double currentPoints;
     private List<Integer> recentFinishes;
     private int qualifyingPosition;
 
@@ -52,7 +52,7 @@ public class Driver {
         return driverNum;
     }
 
-    public int getCurrentPoints() {
+    public double getCurrentPoints() {
         return currentPoints;
     }
 
