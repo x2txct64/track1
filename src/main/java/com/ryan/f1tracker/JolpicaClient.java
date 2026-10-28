@@ -1,128 +1,117 @@
 package com.ryan.f1tracker;
 
-import org.springframework.stereotype.Service;
-
+import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.io.IOException;
-import java.net.URI;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 @Service
 public class JolpicaClient {
-    private static final String BASE_URL = "https://api.jolpi.ca/ergast/f1";
-
     private final HttpClient httpClient;
+    // CHANGED: made final like httpClient; the mapper is never reassigned
+    private final ObjectMapper mapper = new ObjectMapper();
+    private static final String BASE_URL = "https://api.jolpi.ca/ergast/f1/";
+
 
     public JolpicaClient() {
         httpClient = HttpClient.newHttpClient();
     }
 
-    private JsonObject getJson(String url) 
-        throws IOException, InterruptedException {
-            HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(url))
-            .header("Accept", "application/json")
+    private String fetchJson(String path) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(BASE_URL + path))
+            .header("accept", "application/json")
             .GET()
             .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                throw new IOException(
-                     "Jolpica request failed. Status: "
-                    + response.statusCode()
-                );
-            }
+        if (response.statusCode() != 200) {
+            // CHANGED: added ": " so the message reads "failed: 429" not "failed429"
+            throw new IOException("Jolpica request failed: " + response.statusCode());
+        }
+        return response.body();
+    }
 
-            return JsonParser.parseString(response.body())
-                .getAsJsonObject();
-            }
+    private JsonNode fetchTree(String path) throws IOException, InterruptedException {
+        return mapper.readTree(fetchJson(path));
+    }
 
-            public Race fetchRace(int season, int round)
-                throws IOException, InterruptedException {
-                    String url = BASE_URL + "/" + season + "/" + round + "/results.json?limit=100";
+    public List<Race> getRaces(int season) throws IOException, InterruptedException {
+        JsonNode tree = fetchTree(season + ".json");
+        List<Race> races = new ArrayList<>();
 
-                    JsonObject root = getJson(url);
+        for (JsonNode r : tree.at("/MRData/RaceTable/Races")) {
+            races.add(new Race(
+                r.path("season").asInt(),
+                r.path("round").asInt(),
+                r.path("raceName").asText(""),
+                r.at("/Circuit/circuitName").asText(""),
+                r.at("/Circuit/Location/locality").asText(""),
+                r.at("/Circuit/Location/country").asText(""),
+                r.path("date").asText(""),
+                r.path("time").asText("")));
+        }
+        return races;
+    }
 
-                    JsonObject mrData = root.getAsJsonObject("MRData");
+    public List<Driver> getDrivers(int season) throws IOException, InterruptedException {
+        JsonNode tree = fetchTree(season + "/drivers.json");
+        List<Driver> drivers = new ArrayList<>();
 
-                    JsonObject raceTable = mrData.getAsJsonObject("RaceTable");
-                    
-                    JsonArray races = raceTable.getAsJsonArray("Races");
+        for (JsonNode d : tree.at("/MRData/DriverTable/Drivers")) {
+            drivers.add(new Driver(
+                d.path("driverId").asText(""),
+                d.path("givenName").asText(""),
+                d.path("familyName").asText(""),
+                d.path("code").asText(""),
+                d.path("nationality").asText(""),
+                d.path("permanentNumber").asInt(0)));
+        }
 
-                    if (races == null || races.isEmpty()) {
-                        throw new IOException ("No race found for season " + season + ", round " 
-                        + round + ".");
-                    }
+        return drivers;
+    }
 
-                    JsonObject raceData = races.get(0).getAsJsonObject();
+    public Standings getDriverStandings(int season) throws IOException, InterruptedException {
+        JsonNode tree = fetchTree(season + "/driverStandings.json");
+        JsonNode list = tree.at("/MRData/StandingsTable/StandingsLists/0");
 
-                    String raceName = raceData.get("raceName").getAsString();
+        Standings standings = new Standings(
+            list.path("season").asInt(season),
+            list.path("round").asInt(0));
 
-                    String trackName = raceData
-                        .getAsJsonObject("Circuit")
-                        .get("circuitName")
-                        .getAsString();
+        for (JsonNode n : list.path("DriverStandings")) {
+            JsonNode d = n.path("Driver");
 
-                    int actualRound = raceData.get("round").getAsInt();
+        Driver driver = new Driver(
+            d.path("driverId").asText(""),
+            d.path("givenName").asText(""),
+            d.path("familyName").asText(""),
+            d.path("code").asText(""),
+            d.path("nationality").asText(""),
+            d.path("permanentNumber").asInt(0));
 
-                    Race race = new Race(raceName, trackName, actualRound);
+        driver.setTeam(n.at("/Constructors/0/name").asText(""));
+        driver.setCurrentPoints(n.path("points").asDouble());
+        driver.setWins(n.path("wins").asInt());
+        driver.setPosition(n.path("position").asInt());
 
-                    JsonArray results = raceData.getAsJsonArray("Results");
+        standings.addDriver(driver);
 
-                    List<Driver> drivers = new ArrayList<>();
+        }
 
-                    for (JsonElement element : results) {
-                        JsonObject result = element.getAsJsonObject();
-
-                        JsonObject driverData =
-                                result.getAsJsonObject("Driver");
-
-                        JsonObject constructorData =
-                                result.getAsJsonObject("Constructor");
-
-                        String name =
-                                driverData.get("givenName").getAsString()+ " " 
-                                + driverData.get("familyName").getAsString();
-
-                        String team = constructorData.get("name").getAsString();
-
-                        int driverNum = result.get("number").getAsInt();
-
-                        int finishPosition = result.get("position").getAsInt();
-
-                        double points = result.get("points").getAsDouble();
-
-                        Driver driver = new Driver(name, team, driverNum);
-
-                        driver.addRaceResult(finishPosition, points);
-
-                        drivers.add(driver);
-                    }
-
-                    race.setActualResult(drivers);
-
-                    return race;
-                }
-
-            public Standings fetchDriverStandings(int season) 
-                throws IOException, InterruptedException {
-                    String url = BASE_URL + ""
-            }
-
-            
+        return standings;
+    }
 
 }
-
-
