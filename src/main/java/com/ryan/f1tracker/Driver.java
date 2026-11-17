@@ -4,19 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Driver {
-    // Fields that come straight from Jolpica
-    private String driverId;      // "max_verstappen"
+    private String driverId;    
     private String givenName;
     private String familyName;
-    private String code;          // "VER"
+    private String code;     
     private String nationality;
-    private int driverNum;        // permanentNumber
-    private String team;          // constructor name (from standings)
+    private int driverNum; 
+    private String team;
     private double currentPoints;
     private int wins;
-    private int position;         // championship position
+    private int position; 
 
-    // Fields for your own tracking
     private List<Integer> recentFinishes;
     private int qualifyingPosition;
 

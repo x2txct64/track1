@@ -13,6 +13,13 @@ public class F1TrackerApplication {
 
     @Bean
     CommandLineRunner test(JolpicaClient client) {
-        return args -> client.getRaces(2025);
+        return args -> {
+            Standings s = client.getDriverStandings(2025);
+            System.out.println("Season " + s.getSeason() + ", after round " + s.getRound());
+            for (Driver d : s.getSortedStandings()) {
+                System.out.println(d.getPosition() + ". " + d.getName() + " (" + d.getTeam() + ") "
+                + d.getCurrentPoints() + " pts, " + d.getWins() + " wins");
+            }
+        }; 
     }
 }

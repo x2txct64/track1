@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Standings {
     private int season;
-    private int round;   // standings after this round
+    private int round; 
     private List<Driver> drivers;
 
     public Standings(int season, int round) {

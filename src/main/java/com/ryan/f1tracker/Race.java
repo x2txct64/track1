@@ -7,11 +7,11 @@ public class Race {
     private int season;
     private int round;
     private String raceName;
-    private String trackName;     // Circuit.circuitName
-    private String locality;      // Circuit.Location.locality
-    private String country;       // Circuit.Location.country
-    private String date;          // "2026-03-15"
-    private String time;          // "04:00:00Z" (may be empty)
+    private String trackName; 
+    private String locality;  
+    private String country;  
+    private String date;   
+    private String time;         
     private boolean isComplete;
     private List<Driver> qualifyingOrder;
     private List<Driver> actualResults;

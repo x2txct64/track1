@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101013">
+  <meta name="description" content="The latest Formula 1 race result. Explore the podium, fastest lap, and full finishing order with Track1.">
+  <title>Latest race result | Track1</title>
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/results.css">
+  <script src="/results.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="pointer-glow" aria-hidden="true"></div>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Track1 home">
+        <svg class="brand-mark" viewBox="0 0 44 28" fill="none" aria-hidden="true"><path d="M2 23 16 5h13L15 23H2Zm19 0L35 5h7L28 23h-7Z" fill="currentColor"/></svg>
+        <span>Track<span>1</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/results.html" class="nav-link is-active" aria-current="page">Race results</a>
+      </nav>
+      <div class="header-contact" role="group" aria-label="Contact Ryan Njoroge">
+        <a class="contact-button" data-contact="email" aria-label="Email Ryan Njoroge" aria-disabled="true" title="Email address not added yet">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+        </a>
+        <a class="contact-button" data-contact="linkedin" aria-label="Ryan Njoroge on LinkedIn" aria-disabled="true" title="LinkedIn profile not added yet">
+          <svg class="linkedin-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 2H3.55C2.69 2 2 2.68 2 3.52v16.96c0 .84.69 1.52 1.55 1.52h16.9c.86 0 1.55-.68 1.55-1.52V3.52c0-.84-.69-1.52-1.55-1.52ZM7.93 18.75H4.98V9.2h2.95v9.55ZM6.45 7.9a1.71 1.71 0 1 1 0-3.42 1.71 1.71 0 0 1 0 3.42Zm12.3 10.85H15.8V14.1c0-1.11-.02-2.54-1.55-2.54-1.55 0-1.79 1.21-1.79 2.46v4.73H9.51V9.2h2.83v1.3h.04c.4-.75 1.36-1.55 2.79-1.55 2.98 0 3.58 1.96 3.58 4.51v5.29Z"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <main class="results-main" id="main" aria-busy="true">
+      <section class="race-heading" aria-labelledby="race-title">
+        <div>
+          <p class="eyebrow"><span class="status-dot"></span> RACE CENTER <span class="eyebrow-divider">/</span> LATEST RESULT</p>
+          <h1 id="race-title"><span id="race-name">The latest race.</span><span id="race-suffix" class="race-title-suffix" hidden></span></h1>
+          <p class="race-subtitle" id="race-subtitle">Results from the most recent completed Grand Prix.</p>
+        </div>
+        <div class="race-heading-aside" id="race-heading-aside" hidden>
+          <span class="complete-badge"><span></span> RACE COMPLETE</span>
+          <p class="round-label" id="round-label"></p>
+          <span class="round-number" id="round-number" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <div id="loading-state">
+        <p class="load-message" role="status">Loading the latest race result…</p>
+        <div class="loading-preview" aria-hidden="true">
+          <div class="skeleton-podium"><div></div><div></div><div></div></div>
+          <div class="skeleton-line"></div><div class="skeleton-line"></div><div class="skeleton-line"></div>
+        </div>
+      </div>
+
+      <section class="results-state" id="error-state" role="alert" hidden>
+        <span class="state-label">RESULTS UNAVAILABLE</span>
+        <h2>We couldn’t load the race.</h2>
+        <p id="error-message">Check your connection and try again.</p>
+        <button class="primary-button" id="retry-button" type="button">Try again</button>
+      </section>
+
+      <div id="results-content" hidden>
+        <dl class="race-meta">
+          <div><dt>CIRCUIT</dt><dd id="race-circuit"></dd></div>
+          <div><dt>LOCATION</dt><dd id="race-location"></dd></div>
+          <div><dt>RACE DATE</dt><dd id="race-date"></dd></div>
+        </dl>
+
+        <section class="podium-section" aria-labelledby="podium-title">
+          <div class="results-section-heading"><h2 id="podium-title">The podium</h2><span>TOP THREE FINISHERS</span></div>
+          <div class="podium-grid" id="podium-grid"></div>
+        </section>
+
+        <section class="race-highlights" aria-label="Race highlights">
+          <div class="highlight"><p class="stat-label">RACE DISTANCE</p><p class="stat-value" id="race-laps"></p><p class="stat-detail" id="race-entrants"></p></div>
+          <div class="highlight"><p class="stat-label">FASTEST LAP</p><p class="stat-value" id="fastest-time"></p><p class="stat-detail" id="fastest-driver"></p></div>
+          <div class="highlight"><p class="stat-label">BIGGEST MOVER</p><p class="stat-value" id="mover-gain"></p><p class="stat-detail" id="mover-driver"></p></div>
+        </section>
+
+        <section class="classification" aria-labelledby="classification-title">
+          <div class="classification-heading">
+            <div><h2 id="classification-title">Race classification</h2><p>The full finishing order.</p></div>
+            <div class="driver-search">
+              <label class="visually-hidden" for="driver-search">Search drivers or teams</label>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
+              <input id="driver-search" type="search" placeholder="Find a driver or team" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <p class="table-scroll-hint" id="table-scroll-hint">Scroll sideways to see the full result.</p>
+          <div class="table-scroll" role="region" aria-label="Race classification table" aria-describedby="table-scroll-hint" tabindex="0">
+            <table class="results-table">
+              <caption class="visually-hidden" id="results-caption">Full race classification</caption>
+              <thead><tr><th scope="col">POS</th><th scope="col">DRIVER</th><th scope="col">TEAM</th><th scope="col">GRID</th><th scope="col"><abbr title="Positions gained or lost from the starting grid">+/−</abbr></th><th scope="col">LAPS</th><th scope="col">TIME / STATUS</th><th scope="col">PTS</th></tr></thead>
+              <tbody id="classification-body"></tbody>
+            </table>
+          </div>
+          <div class="classification-footnote"><p id="result-count" role="status"></p><p>Race data from <a href="https://jolpi.ca/" target="_blank" rel="noopener noreferrer">Jolpica F1</a></p></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>Made by Ryan Njoroge.</p>
+      <p class="footer-disclaimer">Not affiliated with Formula 1.</p>
+      <span class="footer-wordmark">TRACK1</span>
+    </footer>
+  </div>
+</body>
+</html>
